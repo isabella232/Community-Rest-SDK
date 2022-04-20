@@ -5,6 +5,12 @@ trigger:
 pool:
   vmImage: windows-2019
 
+parameters:
+  - name: PackAndPublish
+    displayName: 'Pack and publish the nuget'
+    type: boolean
+    default: false
+
 variables:
 - name: buildPlatform
   value: 'Any CPU'
@@ -31,6 +37,7 @@ steps:
     configuration: '$(buildConfiguration)'
 
 - task: NuGetCommand@2
+  condition: eq('${{ parameters.PackAndPublish }}', 'true')
   displayName: "Pack CommunityServerSDK"
   inputs:
     command: 'pack'
@@ -38,6 +45,7 @@ steps:
     versioningScheme: 'off'
 
 - task: NuGetCommand@2
+  condition: eq('${{ parameters.PackAndPublish }}', 'true')
   displayName: "Publish CommunityServerSDK package"
   inputs:
     command: 'push'
