@@ -27,3 +27,9 @@ steps:
     solution: 'src/Telligent.Rest.SDK.sln'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
+
+- task: NuGetCommand@2
+  inputs:
+    command: 'pack'
+    packagesToPack: 'src/CommunityServerSDK.nuspec'
+    versioningScheme: 'off'
