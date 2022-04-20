@@ -16,6 +16,7 @@ steps:
 - task: NuGetToolInstaller@1
 
 - task: NuGetCommand@2
+  displayName: "Restore Telligent.Rest.SDK.sln"
   inputs:
     command: 'restore'
     restoreSolution: 'src/Telligent.Rest.SDK.sln'
@@ -23,13 +24,23 @@ steps:
     vstsFeed: 'af66e256-9c46-4fba-ad75-09bf110ec1cc'
 
 - task: VSBuild@1
+  displayName: "Build Telligent.Rest.SDK.sln"
   inputs:
     solution: 'src/Telligent.Rest.SDK.sln'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
 - task: NuGetCommand@2
+  displayName: "Pack CommunityServerSDK"
   inputs:
     command: 'pack'
     packagesToPack: 'src/CommunityServerSDK.nuspec'
     versioningScheme: 'off'
+
+- task: NuGetCommand@2
+  displayName: "Publish CommunityServerSDK package"
+  inputs:
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: 'internal'
+    publishVstsFeed: 'af66e256-9c46-4fba-ad75-09bf110ec1cc'
