@@ -1,19 +1,46 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
 
 trigger:
 - master
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: windows-2019
+
+variables:
+- name: buildPlatform
+  value: 'Any CPU'
+- name: buildConfiguration
+  value: 'Release'
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+- task: NuGetToolInstaller@1
+
+- task: NuGetCommand@2
+  displayName: "Restore Telligent.Rest.SDK.sln"
+  inputs:
+    command: 'restore'
+    restoreSolution: 'src/Telligent.Rest.SDK.sln'
+    feedsToUse: 'select'
+    vstsFeed: 'af66e256-9c46-4fba-ad75-09bf110ec1cc'
+
+- task: VSBuild@1
+  displayName: "Build Telligent.Rest.SDK.sln"
+  inputs:
+    solution: 'src/Telligent.Rest.SDK.sln'
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+
+- task: NuGetCommand@2
+  displayName: "Pack CommunityServerSDK"
+  inputs:
+    command: 'pack'
+    packagesToPack: 'src/CommunityServerSDK.nuspec'
+    versioningScheme: 'off'
+
+- task: NuGetCommand@2
+  displayName: "Publish CommunityServerSDK package"
+  inputs:
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: 'internal'
+    publishVstsFeed: 'af66e256-9c46-4fba-ad75-09bf110ec1cc'
